@@ -62,6 +62,7 @@ class _HomePageState extends State<HomePage> with AutomaticKeepAliveClientMixin 
         _loadingWeather = false;
       });
     } catch (e) {
+      print(e);
       setState(() {
         _error = 'Impossibile caricare il meteo';
         _loadingWeather = false;

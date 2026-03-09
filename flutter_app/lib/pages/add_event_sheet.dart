@@ -57,6 +57,7 @@ class _AddEventSheetState extends State<AddEventSheet> {
       _notesController.clear();
       await _loadEvents();
     } catch (e) {
+      print(e);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Errore: $e'), backgroundColor: AppTheme.error),

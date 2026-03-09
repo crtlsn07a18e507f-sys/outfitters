@@ -5,6 +5,7 @@ import 'config/app_theme.dart';
 import 'pages/home_page.dart';
 import 'pages/wardrobe_page.dart';
 import 'pages/account_page.dart';
+import 'services/auth_gate.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -31,7 +32,7 @@ class StyleConsultantApp extends StatelessWidget {
       title: 'Style AI',
       theme: AppTheme.theme,
       debugShowCheckedModeBanner: false,
-      home: const MainNavigator(),
+      home: const AuthGate(child: MainNavigator()),
     );
   }
 }
