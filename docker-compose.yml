@@ -1,0 +1,44 @@
+version: '3.9'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: style_consultant_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-style_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-style_pass}
+      POSTGRES_DB: ${POSTGRES_DB:-style_db}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-style_user} -d ${POSTGRES_DB:-style_db}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: style_consultant_api
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-style_user}:${POSTGRES_PASSWORD:-style_pass}@postgres:5432/${POSTGRES_DB:-style_db}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+      OPENWEATHER_API_KEY: ${OPENWEATHER_API_KEY}
+      IMAGES_DIR: /app/images
+      MAX_IMAGE_SIZE_MB: "10"
+    volumes:
+      - images_data:/app/images
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
+  images_data:
