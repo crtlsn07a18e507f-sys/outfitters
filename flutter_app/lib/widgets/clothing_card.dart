@@ -18,6 +18,7 @@ class ClothingCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    print(item.imageFilename);
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -41,23 +42,13 @@ class ClothingCard extends StatelessWidget {
                 borderRadius: const BorderRadius.vertical(top: Radius.circular(18)),
                 child: Stack(
                   children: [
-                    SizedBox.expand(
-                      child: CachedNetworkImage(
-                        imageUrl: ApiConfig.imageUrl(item.imageFilename),
-                        fit: BoxFit.cover,
-                        placeholder: (ctx, url) => Container(
-                          color: AppTheme.surface,
-                          child: const Center(
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          ),
+                    SizedBox(
+                      width: 100,
+                      height: 110,
+                      child: Image.network(
+                          'https://img01.ztat.net/article/spp-media-p1/8f3eb685eb0f436ab4b183ce33c72f8e/db5f2b418ed247348788fee9556fb6f3.jpg', // Usa direttamente il link
+                          fit: BoxFit.cover,                        
                         ),
-                        errorWidget: (ctx, url, err) => Container(
-                          color: AppTheme.surface,
-                          child: Center(
-                            child: Text(item.categoryIcon, style: const TextStyle(fontSize: 48)),
-                          ),
-                        ),
-                      ),
                     ),
                     // Category badge
                     Positioned(

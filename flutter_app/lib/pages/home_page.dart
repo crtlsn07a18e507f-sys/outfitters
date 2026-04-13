@@ -3,9 +3,10 @@ import 'package:geolocator/geolocator.dart';
 import '../config/app_theme.dart';
 import '../models/outfit.dart';
 import '../models/weather.dart';
+import '../models/clothing.dart';
 import '../services/api_service.dart';
 import '../services/location_service.dart';
-import '../services/user_service.dart';
+import '../services/auth_service.dart';
 import '../widgets/outfit_card.dart';
 import '../widgets/weather_widget.dart';
 import 'add_event_sheet.dart';
@@ -37,7 +38,8 @@ class _HomePageState extends State<HomePage> with AutomaticKeepAliveClientMixin 
   }
 
   Future<void> _init() async {
-    _userId = await UserService.getUserId();
+    final authService = AuthService();
+    _userId = authService.currentUser?.id;
     await _loadLocation();
     await Future.wait([_loadWeather(), _loadLikedOutfits()]);
   }
@@ -73,18 +75,111 @@ class _HomePageState extends State<HomePage> with AutomaticKeepAliveClientMixin 
   Future<void> _loadLikedOutfits() async {
     if (_userId == null) return;
     setState(() => _loadingOutfits = true);
+    
+    // Simuliamo un ritardo di caricamento
+    await Future.delayed(const Duration(milliseconds: 600));
+
     try {
-      final outfits = await ApiService.getLikedOutfits(
-        _userId!,
-        _weather?.temperature ?? 20.0,
-      );
+      final uid = _userId!;
+      final DateTime now = DateTime.now();
+
+      // DATI HARDCODED: Lista di Outfit di prova
+      final mockOutfits = [
+        // 1. OUTFIT CASUAL INVERNALE
+        Outfit(
+          id: 'outfit_1',
+          userId: uid,
+          liked: true,
+          occasion: 'casual',
+          temperature: 8.0,
+          weatherCondition: 'Nuvoloso',
+          aiExplanation: 'Un look perfetto per una passeggiata in città con temperature fresche.',
+          createdAt: now,
+          items: [
+            _createMockItem('101', uid, 'Piumino Nero', 'jacket', 1),
+            _createMockItem('102', uid, 'Felpa Grigia', 'top', 2),
+            _createMockItem('103', uid, 'Jeans Slim', 'bottom', 3),
+            _createMockItem('104', uid, 'Sneakers Alte', 'shoes', 0),
+          ],
+        ),
+        // 2. OUTFIT BUSINESS
+        Outfit(
+          id: 'outfit_2',
+          userId: uid,
+          liked: true,
+          occasion: 'business',
+          temperature: 18.0,
+          weatherCondition: 'Sereno',
+          aiExplanation: 'Elegante e professionale per i tuoi appuntamenti di lavoro.',
+          createdAt: now,
+          items: [
+            _createMockItem('201', uid, 'Camicia Bianca', 'top', 1),
+            _createMockItem('202', uid, 'Chino Blu', 'bottom', 2),
+            _createMockItem('203', uid, 'Stringate Marroni', 'shoes', 0),
+          ],
+        ),
+        // 3. OUTFIT SPORTIVO
+        Outfit(
+          id: 'outfit_3',
+          userId: uid,
+          liked: true,
+          occasion: 'sport',
+          temperature: 15.0,
+          weatherCondition: 'Pioggia leggera',
+          aiExplanation: 'Abbigliamento tecnico traspirante per l\'allenamento all\'aperto.',
+          createdAt: now,
+          items: [
+            _createMockItem('301', uid, 'Giacca a vento', 'jacket', 1),
+            _createMockItem('302', uid, 'Leggings Tecnici', 'bottom', 2),
+            _createMockItem('303', uid, 'Scarpe da Running', 'shoes', 0),
+          ],
+        ),
+        // 4. OUTFIT SERALE
+        Outfit(
+          id: 'outfit_4',
+          userId: uid,
+          liked: true,
+          occasion: 'party',
+          temperature: 12.0,
+          weatherCondition: 'Chiaro',
+          aiExplanation: 'Un tocco di stile per la tua serata fuori.',
+          createdAt: now,
+          items: [
+            _createMockItem('401', uid, 'Cappotto lungo', 'jacket', 1),
+            _createMockItem('402', uid, 'Maglione a collo alto', 'top', 2),
+            _createMockItem('403', uid, 'Pantaloni Neri', 'bottom', 3),
+          ],
+        ),
+      ];
+
       setState(() {
-        _likedOutfits = outfits;
+        _likedOutfits = mockOutfits;
         _loadingOutfits = false;
       });
     } catch (e) {
       setState(() => _loadingOutfits = false);
     }
+  }
+
+  // Funzione helper per creare rapidamente OutfitItem di test
+  OutfitItem _createMockItem(String id, String uid, String name, String cat, int order) {
+    return OutfitItem(
+      clothingId: id,
+      layerOrder: order,
+      clothing: ClothingItem(
+        id: id,
+        userId: uid,
+        name: name,
+        category: cat,
+        color: 'Default',
+        material: 'Cotone',
+        tempMin: 0,
+        tempMax: 30,
+        suitableOccasions: [],
+        imageFilename: 'https://img01.ztat.net/article/spp-media-p1/68ca23ee065c48b48c8d1878e53788e7/50c796b46b564d78a631cbb019b415b5.jpg', // Immagine generica
+        createdAt: DateTime.now(),
+      ),
+    );
   }
 
   Future<void> _generateOutfit({String? occasion}) async {

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../pages/login_page.dart';
 
 /// Inserisci [AuthGate] come home del tuo MaterialApp.
@@ -20,43 +20,30 @@ class AuthGate extends StatefulWidget {
 }
 
 class _AuthGateState extends State<AuthGate> {
-  bool _isLoggedIn = false;
-  bool _loading = true;
-
-  @override
-  void initState() {
-    super.initState();
-    _check();
-  }
-
-  Future<void> _check() async {
-    final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      _isLoggedIn = prefs.getBool('is_logged_in') ?? false;
-      _loading = false;
-    });
-  }
-
-  void _onLoginSuccess() {
-    setState(() => _isLoggedIn = true);
-  }
+  final _supabase = Supabase.instance.client;
 
   @override
   Widget build(BuildContext context) {
-    if (_loading) {
-      // Splash minimale mentre legge SharedPreferences
-      return const Scaffold(
-        backgroundColor: Color(0xFF0D0D0D), // AppTheme.primary
-        body: Center(
-          child: CircularProgressIndicator(color: Color(0xFF6C63FF)), // AppTheme.accent
-        ),
-      );
-    }
+    return StreamBuilder<AuthState>(
+      stream: _supabase.auth.onAuthStateChange,
+      builder: (context, snapshot) {
+        // Splash minimale durante il caricamento
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Scaffold(
+            backgroundColor: Color(0xFF0D0D0D), // AppTheme.primary
+            body: Center(
+              child: CircularProgressIndicator(color: Color(0xFF6C63FF)), // AppTheme.accent
+            ),
+          );
+        }
 
-    if (!_isLoggedIn) {
-      return LoginPage(onLoginSuccess: _onLoginSuccess);
-    }
+        final session = _supabase.auth.currentSession;
+        if (session == null) {
+          return const LoginPage();
+        }
 
-    return widget.child;
+        return widget.child;
+      },
+    );
   }
 }

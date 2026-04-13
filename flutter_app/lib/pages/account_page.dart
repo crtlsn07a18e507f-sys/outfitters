@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../config/app_theme.dart';
-import '../services/user_service.dart';
+import '../services/auth_service.dart';
 
 class AccountPage extends StatefulWidget {
   const AccountPage({super.key});
@@ -19,6 +20,7 @@ class _AccountPageState extends State<AccountPage> {
 
   final _genders = ['uomo', 'donna', 'non specificato'];
   final _styles = ['casual', 'formal', 'sport', 'business', 'streetwear', 'minimal'];
+  final authService = AuthService();
 
   @override
   void initState() {
@@ -27,10 +29,9 @@ class _AccountPageState extends State<AccountPage> {
   }
 
   Future<void> _loadData() async {
-    final id = await UserService.getUserId();
     final prefs = await SharedPreferences.getInstance();
     setState(() {
-      _userId = id;
+      _userId = authService.currentUser?.id;
       _nameController.text = prefs.getString('profile_name') ?? '';
       _selectedGender = prefs.getString('profile_gender') ?? 'non specificato';
       _selectedStyle = prefs.getString('profile_style') ?? 'casual';
@@ -101,7 +102,7 @@ class _AccountPageState extends State<AccountPage> {
               const SizedBox(height: 8),
               if (_userId != null)
                 Text(
-                  'ID: ${_userId!.substring(0, 8)}...',
+                  authService.currentUser?.email ?? 'ID: ${_userId!.substring(0, 8)}...',
                   style: const TextStyle(color: AppTheme.textSecondary, fontSize: 13),
                 ),
 
@@ -231,12 +232,12 @@ class _AccountPageState extends State<AccountPage> {
 
               const Spacer(),
 
-              // Reset local data option
+              // Logout
               TextButton.icon(
-                onPressed: () => _showResetDialog(),
-                icon: const Icon(Icons.delete_sweep, color: AppTheme.error, size: 18),
+                onPressed: () => _showLogoutDialog(),
+                icon: const Icon(Icons.logout, color: AppTheme.error, size: 18),
                 label: const Text(
-                  'Reimposta dati locali',
+                  'Esci dall\'account',
                   style: TextStyle(color: AppTheme.error, fontSize: 13),
                 ),
               ),
@@ -248,34 +249,29 @@ class _AccountPageState extends State<AccountPage> {
     );
   }
 
-  Future<void> _showResetDialog() async {
+  Future<void> _showLogoutDialog() async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: AppTheme.card,
-        title: const Text('Reimposta dati', style: TextStyle(color: AppTheme.textPrimary)),
+        title: const Text('Esci dall\'account', style: TextStyle(color: AppTheme.textPrimary)),
         content: const Text(
-          'Questo rimuoverà il tuo profilo e tutti i dati salvati localmente. Continuare?',
+          'Sei sicuro di voler uscire?',
           style: TextStyle(color: AppTheme.textSecondary),
         ),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Annulla')),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Conferma', style: TextStyle(color: AppTheme.error)),
+            child: const Text('Esci', style: TextStyle(color: AppTheme.error)),
           ),
         ],
       ),
     );
 
     if (confirmed == true && mounted) {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.clear();
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Dati locali rimossi. Riavvia l\'app.')),
-        );
-      }
+      await Supabase.instance.client.auth.signOut();
+      // AuthGate rileva automaticamente la sessione nulla e mostra il login
     }
   }
 }

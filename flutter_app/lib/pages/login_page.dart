@@ -1,29 +1,27 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../config/app_theme.dart';
 import 'signup_page.dart';
 
 class LoginPage extends StatefulWidget {
-  final VoidCallback onLoginSuccess;
-
-  const LoginPage({super.key, required this.onLoginSuccess});
+  const LoginPage({super.key});
 
   @override
   State<LoginPage> createState() => _LoginPageState();
 }
 
 class _LoginPageState extends State<LoginPage> {
-  final _nameController = TextEditingController();
+  final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
   bool _loading = false;
   String? _error;
 
   Future<void> _login() async {
-    final name = _nameController.text.trim();
+    final email = _emailController.text.trim();
     final password = _passwordController.text;
 
-    if (name.isEmpty || password.isEmpty) {
+    if (email.isEmpty || password.isEmpty) {
       setState(() => _error = 'Compila tutti i campi');
       return;
     }
@@ -33,36 +31,24 @@ class _LoginPageState extends State<LoginPage> {
       _error = null;
     });
 
-    final prefs = await SharedPreferences.getInstance();
-    final savedName = prefs.getString('auth_name');
-    final savedPassword = prefs.getString('auth_password');
-
-    await Future.delayed(const Duration(milliseconds: 400)); // feedback visivo
-
-    if (savedName == null || savedPassword == null) {
-      setState(() {
-        _loading = false;
-        _error = 'Nessun account trovato. Registrati prima.';
-      });
-      return;
+    try {
+      await Supabase.instance.client.auth.signInWithPassword(
+        email: email,
+        password: password,
+      );
+      // AuthGate reagisce automaticamente al cambio di sessione
+    } on AuthException catch (e) {
+      setState(() => _error = e.message);
+    } catch (_) {
+      setState(() => _error = 'Errore durante il login. Riprova.');
+    } finally {
+      if (mounted) setState(() => _loading = false);
     }
-
-    if (savedName != name || savedPassword != password) {
-      setState(() {
-        _loading = false;
-        _error = 'Nome utente o password errati';
-      });
-      return;
-    }
-
-    await prefs.setBool('is_logged_in', true);
-    setState(() => _loading = false);
-    widget.onLoginSuccess();
   }
 
   @override
   void dispose() {
-    _nameController.dispose();
+    _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
@@ -133,14 +119,16 @@ class _LoginPageState extends State<LoginPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Nome utente
+                    // Email
                     TextField(
-                      controller: _nameController,
+                      controller: _emailController,
                       style: const TextStyle(color: AppTheme.textPrimary),
                       textInputAction: TextInputAction.next,
+                      keyboardType: TextInputType.emailAddress,
+                      autocorrect: false,
                       decoration: const InputDecoration(
-                        hintText: 'Nome utente',
-                        prefixIcon: Icon(Icons.person_outline, color: AppTheme.textSecondary),
+                        hintText: 'Email',
+                        prefixIcon: Icon(Icons.email_outlined, color: AppTheme.textSecondary),
                       ),
                     ),
                     const SizedBox(height: 14),
@@ -217,7 +205,7 @@ class _LoginPageState extends State<LoginPage> {
                     onTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) => SignupPage(onSignupSuccess: widget.onLoginSuccess),
+                        builder: (_) => const SignupPage(),
                       ),
                     ),
                     child: const Text(

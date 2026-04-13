@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'config/app_theme.dart';
 import 'pages/home_page.dart';
 import 'pages/wardrobe_page.dart';
@@ -10,6 +11,14 @@ import 'services/auth_gate.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await initializeDateFormatting('it', null);
+
+  await Supabase.initialize(
+    url: 'https://mlfwqfudvpenpawmcqxw.supabase.co',
+    anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1sZndxZnVkdnBlbnBhd21jcXh3Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NTgyNzk5NSwiZXhwIjoyMDkxNDAzOTk1fQ.Uc8Wv7iOfaDnEGLNsJcHxcJJQY-fR0V8T3UcKdRQU3k',
+    authOptions: const FlutterAuthClientOptions(
+      authFlowType: AuthFlowType.pkce,
+    ),
+  );
 
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
