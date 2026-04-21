@@ -23,7 +23,7 @@ class _HomePageState extends State<HomePage> with AutomaticKeepAliveClientMixin 
   List<Outfit> _likedOutfits = [];
   Position? _position;
   bool _loadingWeather = true;
-  bool _loadingOutfits = true;
+  bool _loadingOutfits = false;
   bool _generatingOutfit = false;
   String? _error;
   String? _userId;
@@ -41,7 +41,7 @@ class _HomePageState extends State<HomePage> with AutomaticKeepAliveClientMixin 
     final authService = AuthService();
     _userId = authService.currentUser?.id;
     await _loadLocation();
-    await Future.wait([_loadWeather(), _loadLikedOutfits()]);
+    await Future.wait([_loadWeather()]);
   }
 
   Future<void> _loadLocation() async {
@@ -56,8 +56,8 @@ class _HomePageState extends State<HomePage> with AutomaticKeepAliveClientMixin 
   Future<void> _loadWeather() async {
     setState(() => _loadingWeather = true);
     try {
-      final lat = _position?.latitude ?? 41.9028;
-      final lon = _position?.longitude ?? 12.4964;
+      final lat = _position?.latitude ?? 45.852691;
+      final lon = _position?.longitude ?? 9.405476;
       final weather = await ApiService.getWeather(lat, lon);
       setState(() {
         _weather = weather;
@@ -74,7 +74,6 @@ class _HomePageState extends State<HomePage> with AutomaticKeepAliveClientMixin 
 
   Future<void> _loadLikedOutfits() async {
     if (_userId == null) return;
-    setState(() => _loadingOutfits = true);
     
     // Simuliamo un ritardo di caricamento
     await Future.delayed(const Duration(milliseconds: 600));
@@ -96,73 +95,40 @@ class _HomePageState extends State<HomePage> with AutomaticKeepAliveClientMixin 
           aiExplanation: 'Un look perfetto per una passeggiata in città con temperature fresche.',
           createdAt: now,
           items: [
-            _createMockItem('101', uid, 'Piumino Nero', 'jacket', 1),
-            _createMockItem('102', uid, 'Felpa Grigia', 'top', 2),
-            _createMockItem('103', uid, 'Jeans Slim', 'bottom', 3),
-            _createMockItem('104', uid, 'Sneakers Alte', 'shoes', 0),
+            _createMockItem('101', uid, 'Piumino Nero', 'jacket', 1, 'https://maxi.gumlet.io/media/catalog/product/cache/0545fe0dfa15ac1f18243c5c8f281222/c/o/colmar-originals-md22192yo-piumino-capp-tess-recycled-deluxe-donna-giacconi-donna-051404001-68_1.jpg'),
+            _createMockItem('102', uid, 'Felpa Girocollo Bianca', 'top', 2, 'https://maxi.gumlet.io/media/catalog/product/cache/0545fe0dfa15ac1f18243c5c8f281222/c/o/colmar-originals-mu6153r1xl-felpa-girocollo-in-ottoman-casual-uomo-052267301-06_1.jpg'),
+            _createMockItem('103', uid, 'Jeans Grigio', 'bottom', 3, 'https://maxi.gumlet.io/media/catalog/product/cache/0545fe0dfa15ac1f18243c5c8f281222/m/a/max-mara-weekend-palloress25-jeans-wide-tessuto-marmorizzato-donna-casual-donna-050735601-013_1.jpg'),
+            _createMockItem('104', uid, 'Sneakers Alte', 'shoes', 4, 'https://img01.ztat.net/article/spp-media-p1/c2a84a8023d34976a197895b4eaacfb5/7f346d5d16d5404aa4963cdb628f0729.jpg?imwidth=1800'),
           ],
         ),
-        // 2. OUTFIT BUSINESS
+
         Outfit(
           id: 'outfit_2',
           userId: uid,
           liked: true,
-          occasion: 'business',
-          temperature: 18.0,
-          weatherCondition: 'Sereno',
-          aiExplanation: 'Elegante e professionale per i tuoi appuntamenti di lavoro.',
-          createdAt: now,
-          items: [
-            _createMockItem('201', uid, 'Camicia Bianca', 'top', 1),
-            _createMockItem('202', uid, 'Chino Blu', 'bottom', 2),
-            _createMockItem('203', uid, 'Stringate Marroni', 'shoes', 0),
-          ],
-        ),
-        // 3. OUTFIT SPORTIVO
-        Outfit(
-          id: 'outfit_3',
-          userId: uid,
-          liked: true,
-          occasion: 'sport',
-          temperature: 15.0,
-          weatherCondition: 'Pioggia leggera',
-          aiExplanation: 'Abbigliamento tecnico traspirante per l\'allenamento all\'aperto.',
-          createdAt: now,
-          items: [
-            _createMockItem('301', uid, 'Giacca a vento', 'jacket', 1),
-            _createMockItem('302', uid, 'Leggings Tecnici', 'bottom', 2),
-            _createMockItem('303', uid, 'Scarpe da Running', 'shoes', 0),
-          ],
-        ),
-        // 4. OUTFIT SERALE
-        Outfit(
-          id: 'outfit_4',
-          userId: uid,
-          liked: true,
-          occasion: 'party',
+          occasion: 'casual/formale',
           temperature: 12.0,
-          weatherCondition: 'Chiaro',
-          aiExplanation: 'Un tocco di stile per la tua serata fuori.',
+          weatherCondition: 'Nuvoloso',
+          aiExplanation: 'Un look sia casual che formale per temperature fresche.',
           createdAt: now,
           items: [
-            _createMockItem('401', uid, 'Cappotto lungo', 'jacket', 1),
-            _createMockItem('402', uid, 'Maglione a collo alto', 'top', 2),
-            _createMockItem('403', uid, 'Pantaloni Neri', 'bottom', 3),
+            _createMockItem('101', uid, 'Cardigan', 'jacket', 1, 'https://maxi.gumlet.io/media/catalog/product/cache/0545fe0dfa15ac1f18243c5c8f281222/g/a/gant-8050255-cardigan-collo-sciallato-costa-inglese-casual-uomo-051644201-433_1.jpg'),
+            _createMockItem('102', uid, 'Camicia Bianca', 'top', 2, 'https://media.loropiana.com/PRODUCTS/HYBRIS/FAR/FAR0338/1000/FR/AEBBBD83-A038-4EEF-AD8C-674FE8397E3A_FAR0338_1000_MEDIUM.jpg'),
+            _createMockItem('103', uid, 'Jeans Grigio', 'bottom', 3, 'https://maxi.gumlet.io/media/catalog/product/cache/0545fe0dfa15ac1f18243c5c8f281222/m/a/max-mara-weekend-palloress25-jeans-wide-tessuto-marmorizzato-donna-casual-donna-050735601-013_1.jpg'),
+            _createMockItem('104', uid, 'Sneakers Alte', 'shoes', 4, 'https://img01.ztat.net/article/spp-media-p1/9be8990dbaa84135930bd66d03e0ffe0/260feb35891a4ea9b11eebc73d717156.jpg?imwidth=762'),
           ],
         ),
       ];
 
       setState(() {
         _likedOutfits = mockOutfits;
-        _loadingOutfits = false;
       });
     } catch (e) {
-      setState(() => _loadingOutfits = false);
     }
   }
 
   // Funzione helper per creare rapidamente OutfitItem di test
-  OutfitItem _createMockItem(String id, String uid, String name, String cat, int order) {
+  OutfitItem _createMockItem(String id, String uid, String name, String cat, int order, String link) {
     return OutfitItem(
       clothingId: id,
       layerOrder: order,
@@ -176,7 +142,7 @@ class _HomePageState extends State<HomePage> with AutomaticKeepAliveClientMixin 
         tempMin: 0,
         tempMax: 30,
         suitableOccasions: [],
-        imageFilename: 'https://img01.ztat.net/article/spp-media-p1/68ca23ee065c48b48c8d1878e53788e7/50c796b46b564d78a631cbb019b415b5.jpg', // Immagine generica
+        imageFilename: link, // Immagine generica
         createdAt: DateTime.now(),
       ),
     );
@@ -185,51 +151,11 @@ class _HomePageState extends State<HomePage> with AutomaticKeepAliveClientMixin 
   Future<void> _generateOutfit({String? occasion}) async {
     if (_userId == null) return;
     setState(() => _generatingOutfit = true);
-
-    try {
-      final lat = _position?.latitude ?? 41.9028;
-      final lon = _position?.longitude ?? 12.4964;
-
-      final outfit = await ApiService.generateOutfit(
-        userId: _userId!,
-        latitude: lat,
-        longitude: lon,
-        occasion: occasion,
-      );
-
-      if (!mounted) return;
-      setState(() => _generatingOutfit = false);
-
-      await showModalBottomSheet(
-        context: context,
-        isScrollControlled: true,
-        backgroundColor: Colors.transparent,
-        builder: (_) => OutfitDetailSheet(
-          outfit: outfit,
-          onLike: () async {
-            Navigator.pop(context);
-            await ApiService.reactToOutfit(outfit.id, true);
-            await _loadLikedOutfits();
-            if (mounted) {
-              _showSnackbar('Outfit salvato nei preferiti! 💛');
-            }
-          },
-          onDislike: () async {
-            Navigator.pop(context);
-            await ApiService.reactToOutfit(outfit.id, false);
-            if (mounted) {
-              _showSnackbar('Capito! Non ti verrà più proposto.');
-            }
-          },
-        ),
-      );
-    } on ApiException catch (e) {
-      setState(() => _generatingOutfit = false);
-      _showSnackbar(e.message);
-    } catch (e) {
-      setState(() => _generatingOutfit = false);
-      _showSnackbar('Errore nella generazione dell\'outfit');
-    }
+    setState(() => _loadingOutfits = true);
+    await Future.delayed(const Duration(seconds: 5));
+    setState(() => _generatingOutfit = false);
+    setState(() => _loadingOutfits = false);
+    _loadLikedOutfits();
   }
 
   void _showSnackbar(String message) {
@@ -278,7 +204,7 @@ class _HomePageState extends State<HomePage> with AutomaticKeepAliveClientMixin 
               runSpacing: 10,
               children: [
                 _OccasionChip(
-                  label: '📅 Dal Calendario',
+                  label: 'Dal Calendario',
                   selected: selected == null,
                   onTap: () {
                     Navigator.pop(ctx);
@@ -304,11 +230,11 @@ class _HomePageState extends State<HomePage> with AutomaticKeepAliveClientMixin 
 
   String _occasionEmoji(String o) {
     const map = {
-      'casual': '😊 Casual',
-      'formal': '🤵 Formale',
-      'sport': '⚽ Sport',
-      'business': '💼 Business',
-      'party': '🎉 Party',
+      'casual': 'Casual',
+      'formal': 'Formale',
+      'sport': 'Sport',
+      'business': 'Business',
+      'party': 'Party',
     };
     return map[o] ?? o;
   }
@@ -335,7 +261,7 @@ class _HomePageState extends State<HomePage> with AutomaticKeepAliveClientMixin 
                   child: Row(
                     children: [
                       const Text(
-                        'Style AI',
+                        'Driply',
                         style: TextStyle(
                           color: AppTheme.textPrimary,
                           fontSize: 28,
@@ -387,7 +313,6 @@ class _HomePageState extends State<HomePage> with AutomaticKeepAliveClientMixin 
                           width: double.infinity,
                           child: ElevatedButton.icon(
                             onPressed: _showGenerateOptions,
-                            icon: const Text('✨', style: TextStyle(fontSize: 20)),
                             label: const Text('Genera Outfit del Giorno'),
                             style: ElevatedButton.styleFrom(
                               padding: const EdgeInsets.symmetric(vertical: 18),
@@ -405,7 +330,7 @@ class _HomePageState extends State<HomePage> with AutomaticKeepAliveClientMixin 
                   child: Row(
                     children: [
                       Text(
-                        '💛 Outfit Salvati',
+                        'Outfit generati',
                         style: TextStyle(
                           color: AppTheme.textPrimary,
                           fontSize: 18,
@@ -418,9 +343,9 @@ class _HomePageState extends State<HomePage> with AutomaticKeepAliveClientMixin 
               ),
 
               // Outfits grid 2x2
-              if (_loadingOutfits)
+              if (_generatingOutfit)
                 const SliverToBoxAdapter(child: _OutfitGridSkeleton())
-              else if (_likedOutfits.isEmpty)
+              else if (_likedOutfits.isEmpty && !_generatingOutfit)
                 const SliverToBoxAdapter(
                   child: Padding(
                     padding: EdgeInsets.all(40),

@@ -129,22 +129,9 @@ class _OutfitStack extends StatelessWidget {
                 return SizedBox(
                   height: itemHeight,
                   width: double.infinity,
-                  child: CachedNetworkImage(
-                    imageUrl: ApiConfig.imageUrl(item.clothing.imageFilename),
-                    fit: BoxFit.contain,
-                    placeholder: (ctx, url) => const Center(
-                      child: SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      ),
-                    ),
-                    errorWidget: (ctx, url, err) => Center(
-                      child: Text(
-                        item.clothing.categoryIcon,
-                        style: const TextStyle(fontSize: 32),
-                      ),
-                    ),
+                  child: Image.network(
+                    item.clothing.imageFilename, // Usa direttamente il link
+                    fit: BoxFit.cover,                        
                   ),
                 );
               }).toList(),
@@ -380,12 +367,9 @@ class _OutfitItemRow extends StatelessWidget {
             child: SizedBox(
               width: 70,
               height: 70,
-              child: CachedNetworkImage(
-                imageUrl: ApiConfig.imageUrl(item.clothing.imageFilename),
-                fit: BoxFit.cover,
-                errorWidget: (_, __, ___) => Center(
-                  child: Text(item.clothing.categoryIcon, style: const TextStyle(fontSize: 30)),
-                ),
+              child: Image.network(
+                item.clothing.imageFilename, // Usa direttamente il link
+                fit: BoxFit.cover,                        
               ),
             ),
           ),
@@ -413,10 +397,6 @@ class _OutfitItemRow extends StatelessWidget {
                 ),
               ],
             ),
-          ),
-          Text(
-            item.clothing.categoryIcon,
-            style: const TextStyle(fontSize: 24),
           ),
         ],
       ),
